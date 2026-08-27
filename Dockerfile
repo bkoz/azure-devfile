@@ -1,12 +1,13 @@
-# Optional: Pre-built container image with Azure CLI
+# Pre-built container image with Azure CLI
 # This Dockerfile creates a custom image with Azure CLI pre-installed
 # to speed up workspace startup time in OpenShift Dev Spaces
+# Using Red Hat UBI8 from the public registry (no authentication required)
 
-FROM registry.redhat.io/devspaces/udi-rhel8:latest
+FROM registry.access.redhat.com/ubi8/ubi:latest
 
 USER root
 
-# Install dependencies for Azure CLI
+# Install dependencies for Azure CLI and development tools
 RUN dnf install -y \
     ca-certificates \
     curl \
@@ -21,7 +22,14 @@ RUN dnf install -y \
     git \
     wget \
     unzip \
+    sudo \
+    bash-completion \
+    vim \
     && dnf clean all
+
+# Create a non-root user for development
+RUN useradd -u 10001 -m -s /bin/bash user && \
+    echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Install Azure CLI
 RUN echo "Installing Azure CLI..." && \
@@ -29,15 +37,17 @@ RUN echo "Installing Azure CLI..." && \
     echo "Verifying Azure CLI installation..." && \
     az --version
 
-# Create Azure config directory
-RUN mkdir -p /projects/.azure && chmod -R 777 /projects/.azure
+# Create Azure config directory and projects directory
+RUN mkdir -p /projects/.azure && \
+    chown -R 10001:10001 /projects && \
+    chmod -R 755 /projects
 
 # Set environment variables
 ENV AZURE_CONFIG_DIR=/projects/.azure
 ENV SHELL=/bin/bash
 
-# Switch back to default user (UDI uses user 10001)
-USER 10001
+# Switch to non-root user for development
+USER user
 
 # Set working directory
 WORKDIR /projects
