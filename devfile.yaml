@@ -113,7 +113,8 @@ commands:
         kind: run
       label: Azure CLI Help
 
-events:
+# events:
   # Automatically install Azure CLI when workspace starts
-  postStart:
-    - install-azure-cli
+  # postStart:
+  #   - install-azure-cli
+  # Note: postStart hook disabled for debugging. Run 'install-azure-cli' command manually after startup.
