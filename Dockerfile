@@ -14,6 +14,10 @@ RUN dnf install -y \
     redhat-lsb-core \
     python3 \
     python3-pip \
+    python3-devel \
+    gcc \
+    libffi-devel \
+    openssl-devel \
     git \
     wget \
     unzip \
