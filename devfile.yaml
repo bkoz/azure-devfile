@@ -1,0 +1,119 @@
+schemaVersion: 2.2.0
+metadata:
+  name: azure-cli-workspace
+  displayName: Azure CLI Development Environment
+  description: Workspace with Azure CLI tools and dependencies
+  tags:
+    - Azure
+    - CLI
+    - Cloud
+  projectType: azure
+  language: bash
+  version: 1.0.0
+
+components:
+  # Main development container with Azure CLI
+  - name: azure-tools
+    container:
+      image: registry.redhat.io/devspaces/udi-rhel8:latest
+      memoryLimit: 2Gi
+      memoryRequest: 1Gi
+      cpuLimit: 1000m
+      cpuRequest: 500m
+      mountSources: true
+      sourceMapping: /projects
+      endpoints:
+        - name: azure-cli
+          targetPort: 8080
+          protocol: http
+          exposure: none
+      env:
+        - name: AZURE_CONFIG_DIR
+          value: /projects/.azure
+        - name: SHELL
+          value: /bin/bash
+
+commands:
+  # Install Azure CLI
+  - id: install-azure-cli
+    exec:
+      component: azure-tools
+      commandLine: |
+        echo "Installing Azure CLI dependencies..."
+        sudo dnf install -y ca-certificates curl gnupg lsb-release || \
+        sudo yum install -y ca-certificates curl gnupg redhat-lsb-core || \
+        sudo apt-get update && sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
+
+        echo "Installing Azure CLI..."
+        curl -sL https://aka.ms/InstallAzureCli | bash
+
+        echo "Verifying Azure CLI installation..."
+        az --version
+      workingDir: /projects
+      group:
+        kind: build
+        isDefault: true
+      label: Install Azure CLI
+
+  # Verify Azure CLI installation
+  - id: verify-azure-cli
+    exec:
+      component: azure-tools
+      commandLine: |
+        echo "Azure CLI Version:"
+        az --version
+        echo ""
+        echo "To login to Azure, run: az login"
+      workingDir: /projects
+      group:
+        kind: run
+      label: Verify Azure CLI
+
+  # Login to Azure (interactive)
+  - id: azure-login
+    exec:
+      component: azure-tools
+      commandLine: |
+        az login
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure Login (Interactive)
+
+  # Login to Azure with device code (better for remote/container environments)
+  - id: azure-login-device
+    exec:
+      component: azure-tools
+      commandLine: |
+        az login --use-device-code
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure Login (Device Code)
+
+  # Show Azure subscriptions
+  - id: azure-list-subscriptions
+    exec:
+      component: azure-tools
+      commandLine: |
+        az account list --output table
+      workingDir: /projects
+      group:
+        kind: run
+      label: List Azure Subscriptions
+
+  # Azure CLI help
+  - id: azure-help
+    exec:
+      component: azure-tools
+      commandLine: |
+        az --help
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure CLI Help
+
+events:
+  # Automatically install Azure CLI when workspace starts
+  postStart:
+    - install-azure-cli

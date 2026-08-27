@@ -1,0 +1,162 @@
+schemaVersion: 2.2.0
+metadata:
+  name: azure-cli-workspace-prebuilt
+  displayName: Azure CLI Development Environment (Pre-built)
+  description: Workspace with Azure CLI pre-installed in custom container image
+  tags:
+    - Azure
+    - CLI
+    - Cloud
+  projectType: azure
+  language: bash
+  version: 1.0.0
+
+components:
+  # Container with Azure CLI pre-built
+  - name: azure-tools
+    container:
+      # Option 1: Use pre-built custom image (replace with your registry)
+      # image: quay.io/your-org/azure-cli-devspaces:latest
+
+      # Option 2: Build from Dockerfile in this repo
+      image: azure-cli-devspaces:latest
+      dockerfile:
+        uri: Dockerfile
+        buildContext: .
+        rootRequired: false
+
+      memoryLimit: 2Gi
+      memoryRequest: 1Gi
+      cpuLimit: 1000m
+      cpuRequest: 500m
+      mountSources: true
+      sourceMapping: /projects
+      endpoints:
+        - name: azure-cli
+          targetPort: 8080
+          protocol: http
+          exposure: none
+      env:
+        - name: AZURE_CONFIG_DIR
+          value: /projects/.azure
+        - name: SHELL
+          value: /bin/bash
+
+commands:
+  # Verify Azure CLI installation
+  - id: verify-azure-cli
+    exec:
+      component: azure-tools
+      commandLine: |
+        echo "Azure CLI Version:"
+        az --version
+        echo ""
+        echo "Azure CLI is pre-installed and ready to use!"
+        echo "To login to Azure, run: az login --use-device-code"
+      workingDir: /projects
+      group:
+        kind: run
+        isDefault: true
+      label: Verify Azure CLI
+
+  # Login to Azure with device code
+  - id: azure-login-device
+    exec:
+      component: azure-tools
+      commandLine: |
+        az login --use-device-code
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure Login (Device Code)
+
+  # Login to Azure (interactive)
+  - id: azure-login
+    exec:
+      component: azure-tools
+      commandLine: |
+        az login
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure Login (Interactive)
+
+  # Show Azure subscriptions
+  - id: azure-list-subscriptions
+    exec:
+      component: azure-tools
+      commandLine: |
+        az account list --output table
+      workingDir: /projects
+      group:
+        kind: run
+      label: List Azure Subscriptions
+
+  # Set Azure subscription
+  - id: azure-set-subscription
+    exec:
+      component: azure-tools
+      commandLine: |
+        echo "Available subscriptions:"
+        az account list --output table
+        echo ""
+        read -p "Enter subscription ID or name: " SUB_ID
+        az account set --subscription "$SUB_ID"
+        echo "Active subscription:"
+        az account show --output table
+      workingDir: /projects
+      group:
+        kind: run
+      label: Set Azure Subscription
+
+  # List Azure resource groups
+  - id: azure-list-resource-groups
+    exec:
+      component: azure-tools
+      commandLine: |
+        az group list --output table
+      workingDir: /projects
+      group:
+        kind: run
+      label: List Resource Groups
+
+  # Azure CLI interactive mode
+  - id: azure-interactive
+    exec:
+      component: azure-tools
+      commandLine: |
+        az interactive
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure CLI Interactive Mode
+
+  # Azure CLI help
+  - id: azure-help
+    exec:
+      component: azure-tools
+      commandLine: |
+        az --help
+      workingDir: /projects
+      group:
+        kind: run
+      label: Azure CLI Help
+
+  # Update Azure CLI
+  - id: update-azure-cli
+    exec:
+      component: azure-tools
+      commandLine: |
+        echo "Updating Azure CLI..."
+        az upgrade --yes
+        echo "Azure CLI updated successfully!"
+        az --version
+      workingDir: /projects
+      group:
+        kind: build
+      label: Update Azure CLI
+
+events:
+  # Verify installation on startup
+  postStart:
+    - verify-azure-cli
