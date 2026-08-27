@@ -13,10 +13,10 @@ metadata:
 
 components:
   # Main development container with Azure CLI
-  # Note: Build custom image with: docker build -t azure-cli-devfile:latest .
+  # Image is automatically built and pushed to GitHub Container Registry on push to main
   - name: azure-tools
     container:
-      image: azure-cli-devfile:latest
+      image: ghcr.io/bkoz/azure-devfile:latest
       memoryLimit: 2Gi
       memoryRequest: 1Gi
       cpuLimit: 1000m
