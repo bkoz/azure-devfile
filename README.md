@@ -2,6 +2,8 @@
 
 This devfile creates an OpenShift Dev Spaces workspace with Azure CLI tools pre-installed.
 
+Debugging
+
 ## Features
 
 - **Base Image**: Red Hat Universal Developer Image (UDI) RHEL 8
