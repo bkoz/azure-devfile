@@ -23,6 +23,8 @@ components:
       cpuRequest: 500m
       mountSources: true
       sourceMapping: /projects
+      command: ['/bin/bash']
+      args: ['-c', 'while true; do sleep 30; done']
       endpoints:
         - name: azure-cli
           targetPort: 8080

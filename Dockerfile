@@ -55,9 +55,5 @@ USER user
 # Set working directory
 WORKDIR /projects
 
-# Health check (optional)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD az --version || exit 1
-
-# Default command
-CMD ["/bin/bash"]
+# Default command - keep container running
+CMD ["/bin/bash", "-c", "while true; do sleep 30; done"]
