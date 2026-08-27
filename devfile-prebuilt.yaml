@@ -155,9 +155,3 @@ commands:
       group:
         kind: build
       label: Update Azure CLI
-
-# events:
-  # Verify installation on startup
-  # postStart:
-  #   - verify-azure-cli
-  # Note: postStart hook disabled for debugging. Run 'verify-azure-cli' command manually after startup.
