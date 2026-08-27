@@ -13,9 +13,10 @@ metadata:
 
 components:
   # Main development container with Azure CLI
+  # Note: Build custom image with: docker build -t azure-cli-devfile:latest .
   - name: azure-tools
     container:
-      image: registry.redhat.io/devspaces/udi-rhel8:latest
+      image: azure-cli-devfile:latest
       memoryLimit: 2Gi
       memoryRequest: 1Gi
       cpuLimit: 1000m
@@ -34,27 +35,6 @@ components:
           value: /bin/bash
 
 commands:
-  # Install Azure CLI
-  - id: install-azure-cli
-    exec:
-      component: azure-tools
-      commandLine: |
-        echo "Installing Azure CLI dependencies..."
-        sudo dnf install -y ca-certificates curl gnupg redhat-lsb-core python3 python3-devel gcc libffi-devel openssl-devel || \
-        sudo yum install -y ca-certificates curl gnupg redhat-lsb-core python3 python3-devel gcc libffi-devel openssl-devel || \
-        sudo apt-get update && sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg python3 python3-dev gcc libffi-dev libssl-dev
-
-        echo "Installing Azure CLI..."
-        curl -sL https://aka.ms/InstallAzureCli | bash
-
-        echo "Verifying Azure CLI installation..."
-        az --version
-      workingDir: /projects
-      group:
-        kind: build
-        isDefault: true
-      label: Install Azure CLI
-
   # Verify Azure CLI installation
   - id: verify-azure-cli
     exec:
@@ -112,9 +92,3 @@ commands:
       group:
         kind: run
       label: Azure CLI Help
-
-# events:
-  # Automatically install Azure CLI when workspace starts
-  # postStart:
-  #   - install-azure-cli
-  # Note: postStart hook disabled for debugging. Run 'install-azure-cli' command manually after startup.

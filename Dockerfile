@@ -24,10 +24,10 @@ RUN dnf install -y \
     && dnf clean all
 
 # Install Azure CLI
-RUN curl -sL https://aka.ms/InstallAzureCli | bash
-
-# Verify Azure CLI installation
-RUN az --version
+RUN echo "Installing Azure CLI..." && \
+    curl -sL https://aka.ms/InstallAzureCli | bash && \
+    echo "Verifying Azure CLI installation..." && \
+    az --version
 
 # Create Azure config directory
 RUN mkdir -p /projects/.azure && chmod -R 777 /projects/.azure
