@@ -31,9 +31,12 @@ RUN dnf install -y \
 RUN useradd -u 10001 -m -s /bin/bash user && \
     echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Install Azure CLI
-RUN echo "Installing Azure CLI..." && \
-    curl -sL https://aka.ms/InstallAzureCli | bash && \
+# Install Azure CLI from Microsoft's RPM repository
+RUN echo "Adding Microsoft Azure CLI repository..." && \
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+    echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo && \
+    echo "Installing Azure CLI..." && \
+    dnf install -y azure-cli && \
     echo "Verifying Azure CLI installation..." && \
     az --version
 
